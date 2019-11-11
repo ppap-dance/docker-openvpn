@@ -1,0 +1,78 @@
+#!/bin/sh
+
+set -e
+
+mkdir -p /dev/net
+[ -c /dev/net/tun ] ||
+    mknod /dev/net/tun c 10 200
+
+cd /etc/openvpn
+
+[ -f dh.pem ] ||
+    openssl dhparam -out dh.pem 1024
+
+[ -f key.pem ] ||
+    openssl genrsa -out key.pem 2048 && \
+    chmod 600 key.pem
+
+[ -f csr.pem ] ||
+    openssl req -new -key key.pem -out csr.pem -subj /CN=OpenVPN/
+[ -f cert.pem ] ||
+    openssl x509 -req -in csr.pem -out cert.pem -signkey key.pem -days 24855
+
+[ -f server.conf ] || cat >server.conf <<EOF
+server 192.168.255.128 255.255.255.128
+verb 3
+duplicate-cn
+key key.pem
+ca cert.pem
+cert cert.pem
+dh dh.pem
+keepalive 10 60
+persist-key
+persist-tun
+push "dhcp-option DNS 8.8.8.8"
+push "dhcp-option DNS 8.8.4.4"
+keepalive 10 120
+comp-lzo
+client-to-client
+proto udp
+port 1194
+dev tun
+EOF
+
+[ -f client.ovpn ] || cat >client.ovpn <<EOF
+client
+dev tun
+proto udp
+remote $SERVER_ADDR 1194 udp
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+redirect-gateway def1
+ca ca.crt
+cert client.crt
+key client.key
+dh dh1024.pem
+ns-cert-type server
+cipher AES-128-CBC
+comp-lzo
+verb 4
+<key>
+`cat key.pem`
+</key>
+<cert>
+`cat cert.pem`
+</cert>
+<ca>
+`cat cert.pem`
+</ca>
+<dh>
+`cat dh.pem`
+</dh>
+EOF
+
+iptables -t nat -A POSTROUTING -s 192.168.255.0/24 -o eth0 -j MASQUERADE
+
+openvpn --config server.conf
