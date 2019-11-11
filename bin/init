@@ -1,5 +1,4 @@
 #!/bin/sh
-
 set -e
 
 mkdir -p /dev/net
@@ -7,14 +6,11 @@ mkdir -p /dev/net
     mknod /dev/net/tun c 10 200
 
 cd /etc/openvpn
-
 [ -f dh.pem ] ||
     openssl dhparam -out dh.pem 1024
-
 [ -f key.pem ] ||
     openssl genrsa -out key.pem 2048 && \
     chmod 600 key.pem
-
 [ -f csr.pem ] ||
     openssl req -new -key key.pem -out csr.pem -subj /CN=OpenVPN/
 [ -f cert.pem ] ||

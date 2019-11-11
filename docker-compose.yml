@@ -7,6 +7,8 @@ services:
       network: host
     ports:
       - 1194:1194/udp
+    env_file:
+      - .env
     volumes:
       - ./mnt:/etc/openvpn
     cap_add:
