@@ -1,7 +1,12 @@
 FROM debian:9
 
-RUN apt-get update -q && \
-    apt-get install -qy openvpn iptables curl && \
+RUN set -ex; \
+    \
+    apt-get update -q && \
+    apt-get install -qy \
+        openvpn \
+        iptables; \
+    \
     rm -rf /var/lib/apt/lists/*
 
 VOLUME /etc/openvpn
