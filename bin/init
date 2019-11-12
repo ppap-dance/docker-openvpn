@@ -41,20 +41,16 @@ EOF
 client
 dev tun
 proto udp
-remote $SERVER_ADDR 1194 udp
+remote $OVPN_REMOTE_ADDR 1194 udp
 resolv-retry infinite
 nobind
 persist-key
 persist-tun
 redirect-gateway def1
-ca ca.crt
-cert client.crt
-key client.key
-dh dh1024.pem
 ns-cert-type server
 cipher AES-128-CBC
 comp-lzo
-verb 4
+verb 3
 <key>
 `cat key.pem`
 </key>

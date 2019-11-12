@@ -6,7 +6,7 @@ RUN apt-get update -q && \
 
 VOLUME /etc/openvpn
 
-ENV SERVER_ADDR 127.0.0.1
+ENV OVPN_REMOTE_ADDR 127.0.0.1
 
 ADD ./bin /usr/local/bin
 RUN chmod a+x /usr/local/bin/*
